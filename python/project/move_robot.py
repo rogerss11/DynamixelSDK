@@ -1,11 +1,12 @@
 from dynamixel_sdk import *  # Uses Dynamixel SDK library
+from constants import STANDING_POS
 
 # ------------------- Configuration -------------------
 ADDR_MX_TORQUE_ENABLE = 24
 ADDR_MX_GOAL_POSITION = 30
 PROTOCOL_VERSION = 1.0
 BAUDRATE = 1000000
-DEVICENAME = "COM3"   # Change to your port (e.g., "COM3" on Windows)
+DEVICENAME = "/dev/ttyACM0"   # Change to your port (e.g., "COM3" on Windows)
 TORQUE_ENABLE = 1
 TORQUE_DISABLE = 0
 
@@ -59,11 +60,8 @@ if __name__ == "__main__":
         4: (155, 800),
     }
 
-    # Standing position
-    STANDING_POS = [867, 503, 499, 486]
-
     init_motors()
 
     # Example target configuration
-    q_target = [867, 503, 499, 486]
+    q_target = STANDING_POS
     move_robot(q_target)
