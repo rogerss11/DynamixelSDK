@@ -68,9 +68,18 @@ def forward_transforms():
 
 Ts = forward_transforms()
 T04 = Ts[4]
+T03 = Ts[3]
 
+T35 = sp.eye(4)
+T35[0, 3] = 35
+T35[1, 3] = 45
+T35[2, 3] = 0
+Tcamera = T03 @ T35
+print("T35")
+print(Tcamera)
 o4_func  = sp.lambdify((q1,q2,q3,q4), T04[0:3,3], 'numpy')
 T04_func = sp.lambdify((q1,q2,q3,q4), T04, 'numpy')
+Tcamera_func = sp.lambdify((q1,q2,q3,q4), Tcamera, 'numpy')
 
 # ============================================================
 # Numeric forward kinematics for plotting
@@ -99,6 +108,24 @@ def forward_points(q_vec):
         T = T @ DH_numeric(a,alpha,d,th)
         pts.append(T[:3,3])
     return np.stack(pts)
+
+def forward_camera_point(q_vec):
+    q1v,q2v,q3v,q4v = q_vec
+    DHs = [
+        (0,  np.pi/2, 50, q1v),
+        (93, 0,       0,  q2v + np.pi/2),
+        (93, 0,       0,  q3v),
+        (50, 0,       0,  q4v),
+    ]
+    T04 = np.eye(4)
+    for a,alpha,d,th in DHs:
+        T04 = T04 @ DH_numeric(a,alpha,d,th)
+    T45 = np.eye(4)
+    T45[0, 3] = -15
+    T45[1, 3] = 45
+    T45[2, 3] = 0
+    Tcamera = T04 @ T45
+    return Tcamera[:,-1]
 
 # ============================================================
 # Full IK (from your implementation)
@@ -221,10 +248,12 @@ def go_to_xyz_live(x,y,z):
         enc = read_joint_pos()
         if np.any(np.isnan(enc)): continue
         q_meas = enc_to_q(enc)
-
+        print("camera matrix")
+        print(forward_camera_point(q_meas))
         pts_meas = forward_points(q_meas)
         pts_goal = forward_points(q_goal)
-
+        print("end effector measured:")
+        print(pts_meas[-1])
         print(f"encoder goal: {enc_goal}")
         print(f"q goal: {enc_goal}")
 
@@ -250,11 +279,11 @@ if __name__ == "__main__":
         # ---------------------------------------------------
         # 🔥 Move + live visualization:
         # ---------------------------------------------------
-        go_to_xyz_live(-110, 100, 12)
-        time.sleep(1)
-        go_to_xyz_live(-110, 0, 12)
-        time.sleep(1)
-        go_to_xyz_live(-110, -100, 12)
+        go_to_xyz_live(-100, 50, 0)
+        time.sleep(5)
+        go_to_xyz_live(-100, -50, 0)
+        time.sleep(5)
+        #go_to_xyz_live(-110, -100,0)
 
 
     except KeyboardInterrupt:
