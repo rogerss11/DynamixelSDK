@@ -119,7 +119,8 @@ def pixel_to_plane_ray(u, v, K, T_wc):
 
     R_wc = T_wc[:3, :3]
     t_wc = T_wc[:3, 3]
-
+    print("CAMERA POSITION WORLD:", t_wc)
+    print("R_wc:", R_wc)
     C = t_wc                      # camera center in world
     d_w = R_wc @ d_c              # ray dir in world
 
@@ -152,6 +153,8 @@ def locate_hoop_world_xy(image_path, T_wc, intrinsics_json="camera_intrinsics.js
         raise FileNotFoundError(f"Could not read image: {image_path}")
 
     K, dist, (W, H), meta = load_intrinsics_from_json(intrinsics_json)
+
+    img = cv2.undistort(img, K, dist)
 
     # If your stream is flipped/rotated by the driver, either disable it or
     # adjust K/image consistently. (Assuming raw frames here.)
